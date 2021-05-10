@@ -1,1 +1,1 @@
-# Sangmyung-BigData-Team-unnamed
+Sangmyung_BigData_Team_J-AWS
