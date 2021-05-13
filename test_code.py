@@ -7,58 +7,63 @@ import csv
 import time
 import schedule
 import datetime
+import os
 
 #input#
 serviceKey = "7oZHJT4sU22l%2FztC7xaZcrmPYkHuuw2gt%2FVz%2FZtiLdKHvTTGFJj9tZJbi2iA3VP9ThcCy4eOM7MV1L9nBiS1tw%3D%3D"
 
-#url 요청
+#url request
 def get_request(params):
     url = "http://openapi.tago.go.kr/openapi/service/ArvlInfoInqireService/getSttnAcctoSpcifyRouteBusArvlPrearngeInfoList"
     params = urlparse.urlencode(params)
-    url += '/' + params + '&' + serviceKey
+    url += '?' +"serviceKey=" + serviceKey + "&" + params
     return url
 
-#노선id 와 정류소id load
-routeId_BusStop = pd.read_csv("버스_정류소아이디_정보.csv") # <-파일 위치 삽입
-nodeId = routeId_BusStop.name["nodeId"]
-routeId = routeId_BusStop.name["routId"]
+#nodeid and routeid load
+routeId_BusStop = pd.read_csv("stop_info.csv") 
+nodeId = routeId_BusStop["nodeid"]
+routeId = routeId_BusStop["routeid"]
 
-cityCode = 34010 #천안시 도시 번호
-numOfRows = 10 #최대 10개씩 보기
-_type = "json" #json형태로 받기
-
-#save natural data
-#date.time() live로
+cityCode = 34010 
+numOfRows = 10 
+_type = "json"
 
 def save_data(data):
-    with open('file_name.csv', mode='a') as file_name: #file 열기
-        writer = csv.writer(file_name)
-        writer.writerow(data)
-        file_name.close() #file 닫기
+    #print(type(data))
+    df = pd.DataFrame(data = [data], columns = ("curr_time", "routeno", "routeid", "nodeid", "nodenm", "arrtime", "arrprevstationcnt"))
 
+    if not os.path.exists('test_output.csv'):
+        df.to_csv('test_output.csv', index=False, mode='w', encoding='utf-8-sig')
+    else:
+        df.to_csv('test_output.csv', index=False, mode='a', encoding='utf-8-sig', header=False)
+    
 def get_data():
     for nl, rl in zip(nodeId, routeId):
-        params = {'cityCode':cityCode, 'routeId':rl, 'nodeId': nl, 'numOfRows': numOfRows, '_type': _type}
+        params = {'cityCode':cityCode, 'nodeId': nl, 'routeId':rl, '_type': _type}
         try:
             request_query = get_request(params) #call func.
-        
+            print('request_query:', request_query)
             response = requests.get(url = request_query)
-            curr_time = datetime.datetime.now() #request 한 시간
-            r_dict = json.loads(response.text) #change to json
-            r_response = r_dict.get("response") #
-            r_body = r_response.get("body") #
-            r_items = r_body.get("items") #
-            r_item = r_items.get("item") #
-
+            curr_time = datetime.datetime.now() 
+            r_dict = json.loads(response.text) 
+            r_response = r_dict.get("response") 
+            r_body = r_response.get("body") 
+            r_items = r_body.get("items") 
+            r_item = r_items.get("item") 
+        except: 
+            r_item = []
+            r_header = r_response.get("header")
+            if(r_header["resultMsg"] == "NORMAL SERVICE."):
+                ("")
+                print("NO DATA") 
+                #save_data(data) #call func.
+            else:
+                print("API ERROR: " + str(r_header["resultMsg"]))
             #change type
-            if type(r_item) is not list:
-                temp = []
-                temp.append(r_item)
-                r_item = temp
-
-        except: #예외 처리
-            pass
-        
+        if type(r_item) is not list:
+            temp = []
+            temp.append(r_item)
+            r_item = temp
         for item in r_item:
             routeno = item.get("routeno")
             routeid = item.get("routeid")
@@ -69,7 +74,13 @@ def get_data():
 
             data= [curr_time, routeno, routeid, nodeid, nodenm, arrtime, arrprevstationcnt]
             save_data(data) #call func.
+            print("SAVE DATA")
+
 
 #main#
 if __name__ == "__main__":
     get_data()
+#     for _ in range(24): 
+#         print("1")
+#         schedule.every(5).minutes.do(get_data)
+
