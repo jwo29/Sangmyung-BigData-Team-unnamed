@@ -9,44 +9,54 @@ import schedule
 import datetime
 import os
 
+# load file
+serviceKey_file = pd.read_csv("key.csv")
 
 # input#
 # 키 한번에 묶어서 트래픽 다쓰면 바꿀수 있게 만들기
 
 # 트래픽을 저장
-def set_traffic(serviceKey, traffic):
+def set_traffic():
     serviceKey_file = pd.read_csv("key.csv")
-    mask = serviceKey_file['serviceKey'] == serviceKey
-    serviceKey_file.loc[mask, "traffic"] = traffic  # 수정, 경고에서 이렇게 고치가로 함!, 아래 30번이란 다른점이 애는 파일에 붙여넣기고 아래는 값만 가져와 반환
+#     mask = serviceKey_file['serviceKey'] == serviceKey
+    serviceKey_file.loc[serviceKey_idx, "traffic"] = traffic  # 수정, 경고에서 이렇게 고치가로 함!, 아래 30번이란 다른점이 애는 파일에 붙여넣기고 아래는 값만 가져와 반환
     serviceKey_file.to_csv("key.csv", index=False, mode='w',
                            encoding='utf-8-sig')  # index=False, 행 (인덱스) 이름 쓰기 여부 (기본값 True)
 
 
-# 키 바꾸는 함수
-def get_serviceKey():
-    # load file
-    serviceKey_file = pd.read_csv("key.csv")
-    # check traffic
+def init_serviceKey():
     for value in serviceKey_file['traffic']:
         if value < 990 and value >= 0:
             temp = list(serviceKey_file['traffic'])
             index = temp.index(value)
-            return serviceKey_file['serviceKey'][index], value
+    #             return serviceKey_file['serviceKey'][index], value
+            print(index, value)
+            return index, value
         else:
             print("다음 서비스키로~")
-            set_traffic(serviceKey, value)
+    #             set_traffic(serviceKey, value)
 
     # 9개의 serviceKey를 모두 소진한 경우
     print("Error: there arn't usable traffic")
     return None, None
+    
+# 키 바꾸는 함수
+def get_serviceKey():
+    if serviceKey_idx >= 9:
+        # 9개의 serviceKey를 모두 소진한 경우
+        print("Error: there arn't usable traffic")
+        return None, None
+    else:
+        return serviceKey_idx+1, 0
 
 
-serviceKey, traffic = get_serviceKey()
+serviceKey_idx, traffic = init_serviceKey()
 
 
 # url request
 def get_request(params):
-    global serviceKey
+#     global serviceKey
+    serviceKey = serviceKey_file.loc[serviceKey_idx, "serviceKey"]
     url = "http://openapi.tago.go.kr/openapi/service/ArvlInfoInqireService/getSttnAcctoSpcifyRouteBusArvlPrearngeInfoList"
     params = urlparse.urlencode(params)
     url += '?' + "serviceKey=" + serviceKey + "&" + params
@@ -75,7 +85,7 @@ def save_data(data):
 
 
 def get_data():
-    global serviceKey, traffic
+#     global serviceKey, traffic
     for nl, rl in zip(nodeId, routeId):
         params = {'cityCode': cityCode, 'nodeId': nl, 'routeId': rl, '_type': _type}
         try:
@@ -83,17 +93,19 @@ def get_data():
             curr_date = date_time.strftime('%Y-%m-%d')
             curr_time = date_time.strftime('%H:%M:%S')
 
-            serviceKey, traffic = get_serviceKey()
-            if serviceKey == None and traffic == None:
-                serviceKey, traffic = get_serviceKey()
-                print("get_serviceKey")
+#             serviceKey, traffic = get_serviceKey()
+#             if serviceKey == None and traffic == None:
+#                 serviceKey, traffic = get_serviceKey()
+#                 print("get_serviceKey")
 
             request_query = get_request(params)  # get url
             print('request_query:', request_query)
             response = requests.get(url=request_query)  # get data
 
             traffic += 1
-            set_traffic(serviceKey, traffic)  # 트래픽 저장
+            if traffic >= 990:
+                set_traffic()  # 트래픽 저장
+                serviceKey_idx, value = get_serviceKey()
 
             r_dict = json.loads(response.text)
             r_response = r_dict.get("response")
@@ -141,4 +153,4 @@ def get_data():
 # main#
 if __name__ == "__main__":
     get_data()
-    set_traffic(serviceKey, traffic)
+    set_traffic()
