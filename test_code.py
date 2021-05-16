@@ -8,137 +8,135 @@ import time
 import schedule
 import datetime
 import os
+import sys
 
+# 코드 실행 카운트 총 45번(2시간, 4분간격) 돌면 종료
+cnt = 0
 
-# input#
-# 키 한번에 묶어서 트래픽 다쓰면 바꿀수 있게 만들기
-
-# 트래픽을 저장
-def set_traffic(serviceKey, traffic):
-    serviceKey_file = pd.read_csv("key.csv")
-    mask = serviceKey_file['serviceKey'] == serviceKey
-    serviceKey_file.loc[mask, "traffic"] = traffic  # 수정, 경고에서 이렇게 고치가로 함!, 아래 30번이란 다른점이 애는 파일에 붙여넣기고 아래는 값만 가져와 반환
-    serviceKey_file.to_csv("key.csv", index=False, mode='w',
-                           encoding='utf-8-sig')  # index=False, 행 (인덱스) 이름 쓰기 여부 (기본값 True)
-
-
-# 키 바꾸는 함수
-def get_serviceKey():
-    # load file
-    serviceKey_file = pd.read_csv("key.csv")
-    # check traffic
-    for value in serviceKey_file['traffic']:
-        if value < 990 and value >= 0:
-            temp = list(serviceKey_file['traffic'])
-            index = temp.index(value)
-            return serviceKey_file['serviceKey'][index], value
-        else:
-            print("다음 서비스키로~")
-            set_traffic(serviceKey, value)
-
-    # 9개의 serviceKey를 모두 소진한 경우
-    print("Error: there arn't usable traffic")
-    return None, None
-
-
-serviceKey, traffic = get_serviceKey()
-
-
-# url request
-def get_request(params):
-    global serviceKey
-    url = "http://openapi.tago.go.kr/openapi/service/ArvlInfoInqireService/getSttnAcctoSpcifyRouteBusArvlPrearngeInfoList"
-    params = urlparse.urlencode(params)
-    url += '?' + "serviceKey=" + serviceKey + "&" + params
-    return url
-
-
-# nodeid and routeid load
-routeId_BusStop = pd.read_csv("stop_info.csv")
+#nodeid and routeid load
+serviceKey_file = pd.read_csv("key.csv")
+routeId_BusStop = pd.read_csv("stop_info.csv") 
 nodeId = routeId_BusStop["nodeid"]
 routeId = routeId_BusStop["routeid"]
 
-file_name = datetime.datetime.now().strftime('%Y_%m_%d') + "_test_output.csv"
+# key index
+key_index = 0 
 
-cityCode = 34010
-numOfRows = 10
+# params
+cityCode = 34010 
+numOfRows = 10 
 _type = "json"
 
+file_name = datetime.datetime.now().strftime('%Y_%m_%d') + "_test_output.csv"
+
+# traffic save
+def set_traffic():
+    global key_index
+    serviceKey_file.loc[key_index, "traffic"] = int(serviceKey_file["traffic"][key_index]) + 1 
+    serviceKey_file.to_csv("key.csv", index=False, mode='w', encoding='utf-8-sig')
+
+#check traffic
+def check_traffic():
+    global key_index
+    set_traffic()
+    
+    #check traffic
+    while( serviceKey_file['traffic'][key_index] > 990 ):
+        key_index += 1
+        print("traffic over -> key change")
+    print("key_index: "+ str(key_index))   
+    
+    #serviceKey end..
+    if(key_index == 9):
+        sys.exit("Error: there arn't usable traffic")
+        
+    print("key: " + serviceKey_file['serviceKey'][key_index])
+    print("traffic: " + str(serviceKey_file['traffic'][key_index]))
 
 def save_data(data):
-    df = pd.DataFrame(data=[data], columns=(
-    "curr_date", "curr_time", "routeno", "routeid", "nodeid", "nodenm", "arrtime", "arrprevstationcnt"))
+    df = pd.DataFrame(data = [data], columns = ("curr_date","curr_time", "routeno", "routeid", "nodeid", "nodenm", "arrtime", "arrprevstationcnt"))
     if not os.path.exists(file_name):
         df.to_csv(file_name, index=False, mode='w', encoding='utf-8-sig')
     else:
         df.to_csv(file_name, index=False, mode='a', encoding='utf-8-sig', header=False)
 
-
+#url request
+def get_request(params):
+    global key_index
+    url = "http://openapi.tago.go.kr/openapi/service/ArvlInfoInqireService/getSttnAcctoSpcifyRouteBusArvlPrearngeInfoList"
+    params = urlparse.urlencode(params)
+    url += '?' +"serviceKey=" + serviceKey_file['serviceKey'][key_index] + "&" + params
+    return url
+        
 def get_data():
-    global serviceKey, traffic
+    global key_index
+    global cnt
+    print("cnt: " + str(cnt))
+    if(cnt > 45): 
+        sys.exit("End ================")
+    else: 
+        cnt += 1
+        
     for nl, rl in zip(nodeId, routeId):
-        params = {'cityCode': cityCode, 'nodeId': nl, 'routeId': rl, '_type': _type}
+        params = {'cityCode':cityCode, 'nodeId': nl, 'routeId':rl, '_type': _type}
         try:
-            date_time = datetime.datetime.now()
+            check_traffic() # check traffic, if 990 < key -> change key
+            
+            date_time = datetime.datetime.now() 
             curr_date = date_time.strftime('%Y-%m-%d')
             curr_time = date_time.strftime('%H:%M:%S')
-
-            serviceKey, traffic = get_serviceKey()
-            if serviceKey == None and traffic == None:
-                serviceKey, traffic = get_serviceKey()
-                print("get_serviceKey")
-
-            request_query = get_request(params)  # get url
+            
+            request_query = get_request(params) #get url
             print('request_query:', request_query)
-            response = requests.get(url=request_query)  # get data
-
-            traffic += 1
-            set_traffic(serviceKey, traffic)  # 트래픽 저장
-
-            r_dict = json.loads(response.text)
-            r_response = r_dict.get("response")
-            r_body = r_response.get("body")
-            r_items = r_body.get("items")
-            r_item = r_items.get("item")
-        except:
+            
+            response = requests.get(url = request_query) #get data
+            print("response: " + str(response))
+            
+            r_dict = json.loads(response.text) 
+            r_response = r_dict.get("response") 
+            r_body = r_response.get("body") 
+            r_items = r_body.get("items") 
+            r_item = r_items.get("item") 
+            
+        except: 
             r_item = []
             r_header = r_response.get("header")
-            if (r_header["resultMsg"] == "NORMAL SERVICE."):
-                print("NO DATA")
+            if(r_header["resultMsg"] == "NORMAL SERVICE."):
+                print("NO DATA") 
             else:
-                print("API ERROR: " + str(r_header["resultMsg"]))
-            # change type
+                print("API ERROR: " + str(r_header["resultMsg"])) 
+                # 키 오류 일 수 있으니까 다른 키로
+                key_index += 1
+                check_traffic()
+                
+        #change type
         if type(r_item) is not list:
             temp = []
             temp.append(r_item)
             r_item = temp
+            
         for item in r_item:
             routeno = item.get("routeno")
             routeid = item.get("routeid")
             nodeid = item.get("nodeid")
             nodenm = item.get("nodenm")
             arrtime = item.get("arrtime")
-            arrprevstationcnt = item.get("arrprevstationcnt")
+            arrprevstationcnt = item.get("arrprevstationcnt") 
 
-            data = [curr_date, curr_time, routeno, routeid, nodeid, nodenm, arrtime, arrprevstationcnt]
-            save_data(data)  # call func.
+            data= [curr_date, curr_time, routeno, routeid, nodeid, nodenm, arrtime, arrprevstationcnt]
+            save_data(data) #call func.
             print("SAVE DATA")
-
-
-# 코드 돌리기 전에 key.csv 손으로 0 초기화
-# 내일 할거
-# 서비스키를 save하고 get하는 함수 호출부분 최적화
-
-# 스케줄 함수 구현
-# 파일 날짜별로 저장하기
-##########################################
-# traffic은 매 4분마다. (하루 총 8064번)
-# 코드 최적화  // 트래픽 인덱스 전역 변수
-# 스케줄 함수 구현
-# traffic 파일은 꼭 시간대 종료 후에 다음 사람과 확인할 것
-# 정류장 정리해서 보내줄 것
-
-# main#
+            
+# #main#
 if __name__ == "__main__":
-    get_data()
-    set_traffic(serviceKey, traffic)
+    # 
+    schedule.clear()
+    print("코드 실행!")
+    
+    #실행 이후 4분마다 data request and save data
+    schedule.every(4).minutes.do(get_data)
+
+    while True:  
+        schedule.run_pending()
+        time.sleep(1)
+        
