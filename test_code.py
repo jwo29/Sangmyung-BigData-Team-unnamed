@@ -28,7 +28,6 @@ numOfRows = 10
 _type = "json"
 
 file_name = datetime.datetime.now().strftime('%Y_%m_%d') + "_test_output.csv"
-df = pd.DataFrame(columns = ("curr_date", "curr_time", "routeno", "routeid", "nodeid", "nodenm", "arrtime", "arrprevstationcnt"))
 
 # traffic save
 def set_traffic():
@@ -55,8 +54,7 @@ def check_traffic():
         print("traffic: " + str(serviceKey_file['traffic'][key_index]))
 
 def save_data(data):
-    global df
-    df = data
+    df = pd.DataFrame(data = [data], columns = ("curr_date", "curr_time", "routeno", "routeid", "nodeid", "nodenm", "arrtime", "arrprevstationcnt"))
     if not os.path.exists(file_name):
         df.to_csv(file_name, index=False, mode='w', encoding='utf-8-sig')
     else:
@@ -133,7 +131,7 @@ if __name__ == "__main__":
         
     print("================================== [ START ]")  
     while True: 
-        if cnt >= 34: # 34번 돌아ㅏ
+        if cnt == 32: # 32번 돌아ㅏ
             schedule.clear()
             print("================================== [ END ]")
             break
