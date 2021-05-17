@@ -10,9 +10,6 @@ import datetime
 import os
 import sys
 
-# 코드 실행 카운트 총 45번(2시간, 4분간격) 돌면 종료
-cnt = 0
-
 #nodeid and routeid load
 serviceKey_file = pd.read_csv("key.csv")
 routeId_BusStop = pd.read_csv("stop_info.csv") 
@@ -22,17 +19,20 @@ routeId = routeId_BusStop["routeid"]
 # key index
 key_index = 0 
 
+# count 
+cnt = 0
+
 # params
 cityCode = 34010 
 numOfRows = 10 
 _type = "json"
 
 file_name = datetime.datetime.now().strftime('%Y_%m_%d') + "_test_output.csv"
+df = pd.DataFrame(columns = ("curr_date", "curr_time", "routeno", "routeid", "nodeid", "nodenm", "arrtime", "arrprevstationcnt"))
 
 # traffic save
 def set_traffic():
     global key_index
-    
     serviceKey_file.loc[key_index, "traffic"] = int(serviceKey_file["traffic"][key_index]) + 1 
     serviceKey_file.to_csv("key.csv", index=False, mode='w', encoding='utf-8-sig')
 
@@ -44,7 +44,7 @@ def check_traffic():
     #check traffic
     while( serviceKey_file['traffic'][key_index] > 950 ):
         key_index += 1
-        print("traffic over -> key change")
+        print("================================== [ traffic over -> key change ]")
     print("key_index: "+ str(key_index))   
     
     #serviceKey end..
@@ -55,7 +55,8 @@ def check_traffic():
         print("traffic: " + str(serviceKey_file['traffic'][key_index]))
 
 def save_data(data):
-    df = pd.DataFrame(data = [data], columns = ("curr_date","curr_time", "routeno", "routeid", "nodeid", "nodenm", "arrtime", "arrprevstationcnt"))
+    global df
+    df = data
     if not os.path.exists(file_name):
         df.to_csv(file_name, index=False, mode='w', encoding='utf-8-sig')
     else:
@@ -72,14 +73,9 @@ def get_request(params):
 def get_data():
     global key_index
     global cnt
-    print("cnt: " + str(cnt))
+    print("================================== [ cnt: " + str(cnt) + " ]")
+    cnt += 1
     
-    # 120분 / 4분 = 30번씩
-    if(cnt > 30): 
-        sys.exit("================================ End ================================")
-    else: 
-        cnt += 1
-        
     for nl, rl in zip(nodeId, routeId):
         params = {'cityCode':cityCode, 'nodeId': nl, 'routeId':rl, '_type': _type}
         try:
@@ -126,18 +122,23 @@ def get_data():
         except AttributeError as err:
             # 데이터가 1개일 경우 여기서 예외처리
             print("NO DATA(1)")
-            
-            
+        
 #main#
 if __name__ == "__main__":
     schedule.clear()
-    print("코드 실행!")
-    # 정각에 코드 시작하기
-    get_data()
-    #실행 이후 4분마다 data request and save data
-    schedule.every(4).minutes.do(get_data)
-
-    while True:  
-        schedule.run_pending()
-        time.sleep(1)
+    
+    minutes = [":00", ":04", ":08", ":12", ":16", ":20", ":24", ":28", ":32", ":36", ":40", ":44", ":48", ":52", ":56"]
+    for m in minutes:
+        schedule.every().hour.at(m).do(get_data)
         
+    print("================================== [ START ]")  
+    while True: 
+        if cnt >= 34: # 34번 돌아ㅏ
+            schedule.clear()
+            print("================================== [ END ]")
+            break
+        else:
+            n = schedule.idle_seconds()
+            print("================================== [ time.sleep(" + str(n) + ") ]")
+            time.sleep(n)
+        schedule.run_pending()
