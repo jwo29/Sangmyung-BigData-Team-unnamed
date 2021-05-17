@@ -109,18 +109,24 @@ def get_data():
                 print("NO DATA")
             else: 
                 print("API ERROR: " + e)
-            
-        for item in r_item: 
-            routeno = item.get("routeno")
-            routeid = item.get("routeid")
-            nodeid = item.get("nodeid")
-            nodenm = item.get("nodenm")
-            arrtime = item.get("arrtime")
-            arrprevstationcnt = item.get("arrprevstationcnt") 
+                
+        try:
+            for item in r_item: 
+                routeno = item.get("routeno")
+                routeid = item.get("routeid")
+                nodeid = item.get("nodeid")
+                nodenm = item.get("nodenm")
+                arrtime = item.get("arrtime")
+                arrprevstationcnt = item.get("arrprevstationcnt") 
 
-            data= [curr_date, curr_time, routeno, routeid, nodeid, nodenm, arrtime, arrprevstationcnt]
-            save_data(data) 
-            print("SAVE DATA")
+                data= [curr_date, curr_time, routeno, routeid, nodeid, nodenm, arrtime, arrprevstationcnt]
+                save_data(data) 
+                print("SAVE DATA")
+                
+        except AttributeError as err:
+            # 데이터가 1개일 경우 여기서 예외처리
+            print("NO DATA(1)")
+            
             
 #main#
 if __name__ == "__main__":
