@@ -32,6 +32,7 @@ file_name = datetime.datetime.now().strftime('%Y_%m_%d') + "_test_output.csv"
 # traffic save
 def set_traffic():
     global key_index
+    
     serviceKey_file.loc[key_index, "traffic"] = int(serviceKey_file["traffic"][key_index]) + 1 
     serviceKey_file.to_csv("key.csv", index=False, mode='w', encoding='utf-8-sig')
 
@@ -41,17 +42,17 @@ def check_traffic():
     set_traffic()
     
     #check traffic
-    while( serviceKey_file['traffic'][key_index] > 990 ):
+    while( serviceKey_file['traffic'][key_index] > 950 ):
         key_index += 1
         print("traffic over -> key change")
     print("key_index: "+ str(key_index))   
     
     #serviceKey end..
-    if(key_index == 9):
+    if(key_index >= 9):
         sys.exit("Error: there arn't usable traffic")
-        
-    print("key: " + serviceKey_file['serviceKey'][key_index])
-    print("traffic: " + str(serviceKey_file['traffic'][key_index]))
+    else:    
+        print("key: " + serviceKey_file['serviceKey'][key_index])
+        print("traffic: " + str(serviceKey_file['traffic'][key_index]))
 
 def save_data(data):
     df = pd.DataFrame(data = [data], columns = ("curr_date","curr_time", "routeno", "routeid", "nodeid", "nodenm", "arrtime", "arrprevstationcnt"))
@@ -72,15 +73,17 @@ def get_data():
     global key_index
     global cnt
     print("cnt: " + str(cnt))
-    if(cnt > 45): 
-        sys.exit("End ================")
+    
+    # 120분 / 4분 = 30번씩
+    if(cnt > 30): 
+        sys.exit("================================ End ================================")
     else: 
         cnt += 1
         
     for nl, rl in zip(nodeId, routeId):
         params = {'cityCode':cityCode, 'nodeId': nl, 'routeId':rl, '_type': _type}
         try:
-            check_traffic() # check traffic, if 990 < key -> change key
+            check_traffic() # check traffic, if 950 < key -> change key
             
             date_time = datetime.datetime.now() 
             curr_date = date_time.strftime('%Y-%m-%d')
@@ -98,24 +101,16 @@ def get_data():
             r_items = r_body.get("items") 
             r_item = r_items.get("item") 
             
-        except: 
-            r_item = []
+        except AttributeError as err:
             r_header = r_response.get("header")
-            if(r_header["resultMsg"] == "NORMAL SERVICE."):
-                print("NO DATA") 
-            else:
-                print("API ERROR: " + str(r_header["resultMsg"])) 
-                # 키 오류 일 수 있으니까 다른 키로
-                key_index += 1
-                check_traffic()
-                
-        #change type
-        if type(r_item) is not list:
-            temp = []
-            temp.append(r_item)
-            r_item = temp
+            r_item = []
+            e = r_header["resultMsg"]
+            if(e == "NORMAL SERVICE."):
+                print("NO DATA")
+            else: 
+                print("API ERROR: " + e)
             
-        for item in r_item:
+        for item in r_item: 
             routeno = item.get("routeno")
             routeid = item.get("routeid")
             nodeid = item.get("nodeid")
@@ -124,15 +119,15 @@ def get_data():
             arrprevstationcnt = item.get("arrprevstationcnt") 
 
             data= [curr_date, curr_time, routeno, routeid, nodeid, nodenm, arrtime, arrprevstationcnt]
-            save_data(data) #call func.
+            save_data(data) 
             print("SAVE DATA")
             
-# #main#
+#main#
 if __name__ == "__main__":
-    # 
     schedule.clear()
     print("코드 실행!")
-    
+    # 정각에 코드 시작하기
+    get_data()
     #실행 이후 4분마다 data request and save data
     schedule.every(4).minutes.do(get_data)
 
