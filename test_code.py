@@ -38,18 +38,18 @@ def set_traffic():
 #check traffic
 def check_traffic():
     global key_index
-    set_traffic()
     
     #check traffic
-    while( serviceKey_file['traffic'][key_index] > 950 ):
+    while( serviceKey_file['traffic'][key_index] >= 950 ):
         key_index += 1
-        print("================================== [ traffic over -> key change ]")
+        print("====================================== [ traffic over -> key change ]")
     print("key_index: "+ str(key_index))   
     
     #serviceKey end..
     if(key_index >= 9):
         sys.exit("Error: there arn't usable traffic")
     else:    
+        set_traffic()
         print("key: " + serviceKey_file['serviceKey'][key_index])
         print("traffic: " + str(serviceKey_file['traffic'][key_index]))
 
@@ -71,7 +71,7 @@ def get_request(params):
 def get_data():
     global key_index
     global cnt
-    print("================================== [ cnt: " + str(cnt) + " ]")
+    print("====================================== [ cnt: " + str(cnt) + " ]")
     cnt += 1
     
     for nl, rl in zip(nodeId, routeId):
@@ -129,14 +129,14 @@ if __name__ == "__main__":
     for m in minutes:
         schedule.every().hour.at(m).do(get_data)
         
-    print("================================== [ START ]")  
+    print("====================================== [ START ]")  
     while True: 
-        if cnt == 32: # 32번 돌아ㅏ
+        if cnt == 30: 
             schedule.clear()
-            print("================================== [ END ]")
+            print("====================================== [ END ]")
             break
         else:
             n = schedule.idle_seconds()
-            print("================================== [ time.sleep(" + str(n) + ") ]")
+            print("====================================== [ time.sleep(" + str(n) + ") ]")
             time.sleep(n)
         schedule.run_pending()
