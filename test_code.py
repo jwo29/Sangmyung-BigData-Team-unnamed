@@ -42,7 +42,7 @@ def check_traffic():
     #check traffic
     while( serviceKey_file['traffic'][key_index] >= 950 ):
         key_index += 1
-        print("====================================== [ traffic over -> key change ]")
+        print("================================== [ traffic over -> key change ]")
     print("key_index: "+ str(key_index))   
     
     #serviceKey end..
@@ -71,8 +71,8 @@ def get_request(params):
 def get_data():
     global key_index
     global cnt
-    print("====================================== [ cnt: " + str(cnt) + " ]")
     cnt += 1
+    print("================================== [ cnt: " + str(cnt) + " ]")
     
     for nl, rl in zip(nodeId, routeId):
         params = {'cityCode':cityCode, 'nodeId': nl, 'routeId':rl, '_type': _type}
@@ -129,14 +129,15 @@ if __name__ == "__main__":
     for m in minutes:
         schedule.every().hour.at(m).do(get_data)
         
-    print("====================================== [ START ]")  
+    print("================================== [ START ]")  
     while True: 
-        if cnt == 30: 
-            schedule.clear()
-            print("====================================== [ END ]")
-            break
-        else:
-            n = schedule.idle_seconds()
-            print("====================================== [ time.sleep(" + str(n) + ") ]")
-            time.sleep(n)
         schedule.run_pending()
+        
+        if cnt >= 31: # 56분후 ~ 00분전에 코드 돌리기, 총 31번(2시간) 반복
+            schedule.clear()
+            print("================================== [ END ]")
+            break
+        else: 
+            n = schedule.idle_seconds()
+            print("================================== [ time.sleep(" + str(n) + ") ]")
+            time.sleep(n)
