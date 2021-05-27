@@ -1,3 +1,4 @@
+﻿curr_date,curr_time,routeno,routeid,nodeid,nodenm,arrtime,arrprevstationcnt
 2021-05-22,20:00:00,11,CAB285000006,CAB285000668,동남구청,740,10
 2021-05-22,20:00:00,11,CAB285000006,CAB285000668,동남구청,1471,19
 2021-05-22,20:00:00,11,CAB285000006,CAB285001478,단국대학교,778,6
