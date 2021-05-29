@@ -19,7 +19,7 @@ OPERATION2 = 'getRouteInfoIem'
 # 서비스키
 SERVICEKEY = "Ee5WLqN4iRCKuFUsxlAF1P9anyOX5vH%2BOFG2%2BYM%2BcEoNQOg9emMEyyKM37eAmmVnl1ZxgTalHHL90VNl1B1zlg%3D%3D"
 
-bus_routes_data = pd.read_csv("route_id.csv")
+bus_routes_data = pd.read_csv("../csv/route_id.csv")
 
 bus_routes_schedule_data = pd.DataFrame(columns = ("routeid", "routeno", "startnodenm", "startvehicletime", "endnodenm", "endvehicletime", "intervaltime")) 
 
@@ -63,4 +63,4 @@ for idx in range(len(routeId)):
     bus_routes_schedule_data.loc[idx] = [routeid, routeno, startnodenm, startvehicletime, endnodenm, endvehicletime,intervaltime]
 
 #bus_routes_schedule_data
-#bus_routes_schedule_data.to_csv("route_info.csv", encoding='utf-8-sig')
+#bus_routes_schedule_data.to_csv("../csv/route_info.csv", encoding='utf-8-sig')

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-bus_route_data = pd.read_csv("route_id.csv")
+bus_route_data = pd.read_csv("../csv/route_id.csv")
 
 bus_route_no = bus_route_data["routeno"]
 bus_route_id = bus_route_data["routeid"]
@@ -32,4 +32,5 @@ for _ in range(len(bus_route_no)):
     stop5 = bus_nodeord[idx, 4]
     data.loc[idx] = [ routeno, routeid, stop1, stop2, stop3, stop4, stop5 ]
     idx += 1
-data.to_csv("stop_name.csv", encoding='utf-8-sig', index=False)
+    
+#data.to_csv("../csv/stop_name.csv", encoding='utf-8-sig', index=False)

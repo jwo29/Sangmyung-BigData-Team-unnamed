@@ -27,13 +27,13 @@ cityCode = 34010
 numOfRows = 10 
 _type = "json"
 
-file_name = datetime.datetime.now().strftime('%Y_%m_%d') + "_test_output.csv"
+file_name = "../"+ datetime.datetime.now().strftime('%Y_%m_%d') + "_test_output.csv"
 
 # traffic save
 def set_traffic():
     global key_index
     serviceKey_file.loc[key_index, "traffic"] = int(serviceKey_file["traffic"][key_index]) + 1 
-    serviceKey_file.to_csv("key.csv", index=False, mode='w', encoding='utf-8-sig')
+    serviceKey_file.to_csv("../csv/key.csv", index=False, mode='w', encoding='utf-8-sig')
 
 #check traffic
 def check_traffic():

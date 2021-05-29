@@ -17,4 +17,4 @@ for idx in range(9):
     t = 0
     data.loc[idx] = [s, t]
 
-data.to_csv("key.csv", index =False)
+data.to_csv("../csv/key.csv", index =False)

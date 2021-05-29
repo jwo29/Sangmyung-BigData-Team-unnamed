@@ -23,7 +23,7 @@ SERVICEKEY = "Ee5WLqN4iRCKuFUsxlAF1P9anyOX5vH%2BOFG2%2BYM%2BcEoNQOg9emMEyyKM37eA
 
 bus_stop_data = pd.DataFrame(columns = ("routeno", "routeid", "nodenm", "nodeord", "nodeid", "nodeno", "gpslati", "gpslong")) 
 
-stop_name = pd.read_csv("stop_name.csv")
+stop_name = pd.read_csv("../csv/stop_name.csv")
 
 # 파라미터, 노선id는 버스_주요정류소_정보.csv에서 가저온다
 cityCode  = 34010
@@ -88,5 +88,5 @@ for index, routeId in enumerate(stop_name["routeid"]):
 
 
 
-#bus_stop_data.to_csv("stop_info.csv", encoding='utf-8-sig', index=False)
+#bus_stop_data.to_csv("../csv/stop_info.csv", encoding='utf-8-sig', index=False)
 #bus_stop_data.groupby(["nodenm", "nodeid"]).size().to_csv("stop_group.csv", encoding='utf-8-sig')

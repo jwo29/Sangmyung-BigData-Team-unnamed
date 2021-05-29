@@ -66,4 +66,4 @@ for routeNo in Bus_routeNo:
         print("api 문제")
 
 #print(bus_routes_data)
-#bus_routes_data.to_csv("route_id.csv", encoding='utf-8-sig')
+#bus_routes_data.to_csv("../csv/route_id.csv", encoding='utf-8-sig')

@@ -49,7 +49,7 @@ for r_id in routeid_list:
         bus_df.at[idx, "Time gap"] = bus_dic[directory]
         bus_df.at[idx, "Average"] = np.mean(bus_dic[directory])
 
-    file_name = "./mine/"+r_id +".csv"
+    file_name = "../mine/"+r_id +".csv"
     bus_df.to_csv(file_name, index=False, mode='w', encoding='utf-8-sig')
 
 
@@ -62,7 +62,7 @@ total_averages = pd.DataFrame(columns=["CAB285000006","CAB285000007","CAB2850000
 # In[22]:
 
 
-path =  "./mine"
+path =  "../mine"
 file_list = os.listdir(path)
 
 
@@ -70,7 +70,7 @@ file_list = os.listdir(path)
 
 
 for i in range(1,len(file_list)):
-    temp = pd.read_csv("./mine/"+file_list[i])
+    temp = pd.read_csv("../mine/"+file_list[i])
     r_id = file_list[i][:-4]
 
     total_averages[r_id][0] = (temp["Average"][0])
@@ -79,7 +79,7 @@ for i in range(1,len(file_list)):
     total_averages[r_id][3] = (temp["Average"][3])
 
 total_averages["total_average"] = total_averages.mean(axis=1)
-total_averages.to_csv("data_table.csv", index=False, mode='w', encoding='utf-8-sig')
+total_averages.to_csv("../csv/data_table.csv", index=False, mode='w', encoding='utf-8-sig')
 #     aver_col = temp['Average']
 #     temp_df = pd.DataFrame(aver_col, columns=[r_id])
     
