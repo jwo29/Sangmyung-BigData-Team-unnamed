@@ -11,7 +11,7 @@ import os
 import sys
 
 #nodeid and routeid load
-serviceKey_file = pd.read_csv("../csv/key.csv")
+serviceKey_file = pd.read_csv("../key.csv")
 routeId_BusStop = pd.read_csv("../csv/stop_info.csv") 
 nodeId = routeId_BusStop["nodeid"]
 routeId = routeId_BusStop["routeid"]
@@ -33,7 +33,7 @@ file_name = "../"+ datetime.datetime.now().strftime('%Y_%m_%d') + "_test_output.
 def set_traffic():
     global key_index
     serviceKey_file.loc[key_index, "traffic"] = int(serviceKey_file["traffic"][key_index]) + 1 
-    serviceKey_file.to_csv("../csv/key.csv", index=False, mode='w', encoding='utf-8-sig')
+    serviceKey_file.to_csv("../key.csv", index=False, mode='w', encoding='utf-8-sig')
 
 #check traffic
 def check_traffic():
