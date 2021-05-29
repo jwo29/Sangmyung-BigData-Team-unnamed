@@ -11,8 +11,8 @@ import os
 import sys
 
 #nodeid and routeid load
-serviceKey_file = pd.read_csv("key.csv")
-routeId_BusStop = pd.read_csv("stop_info.csv") 
+serviceKey_file = pd.read_csv("../csv/key.csv")
+routeId_BusStop = pd.read_csv("../csv/stop_info.csv") 
 nodeId = routeId_BusStop["nodeid"]
 routeId = routeId_BusStop["routeid"]
 
