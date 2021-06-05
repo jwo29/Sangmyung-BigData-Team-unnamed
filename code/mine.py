@@ -53,23 +53,23 @@ for r_id in routeid_list:
     bus_df.to_csv(file_name, index=False, mode='w', encoding='utf-8-sig')
 
 
-# In[20]:
+# In[3]:
 
 
 total_averages = pd.DataFrame(columns=["CAB285000006","CAB285000007","CAB285000008","CAB285000009","CAB285000010","CAB285000011","CAB285000012","CAB285000013","CAB285000024","CAB285000025","CAB285000293","CAB285000294"],index=["Stage1","Stage2","Stage3","Stage4"])
 
 
-# In[22]:
+# In[4]:
 
 
 path =  "../mine"
 file_list = os.listdir(path)
 
 
-# In[23]:
+# In[5]:
 
 
-for i in range(1,len(file_list)):
+for i in range(0,len(file_list)):
     temp = pd.read_csv("../mine/"+file_list[i])
     r_id = file_list[i][:-4]
 
@@ -80,9 +80,4 @@ for i in range(1,len(file_list)):
 
 total_averages["total_average"] = total_averages.mean(axis=1)
 total_averages.to_csv("../csv/data_table.csv", index=False, mode='w', encoding='utf-8-sig')
-#     aver_col = temp['Average']
-#     temp_df = pd.DataFrame(aver_col, columns=[r_id])
-    
 
-
-# %%
