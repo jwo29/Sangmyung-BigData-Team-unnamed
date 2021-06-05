@@ -24,7 +24,7 @@ routeid_list = ["CAB285000006",
                 "CAB285000293",
                 "CAB285000294"]
 
-dir_list = ["Stage_1", "Stage_2", "Stage_3", "Stage_4"]
+dir_list = ["../Stage_1", "../Stage_2", "../Stage_3", "../Stage_4"]
 
 for r_id in routeid_list:
     bus_dic = {}
@@ -84,3 +84,5 @@ total_averages.to_csv("../csv/data_table.csv", index=False, mode='w', encoding='
 #     temp_df = pd.DataFrame(aver_col, columns=[r_id])
     
 
+
+# %%
