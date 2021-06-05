@@ -1,6 +1,4 @@
-
 # In[1]:
-
 
 import os
 import pandas as pd
@@ -9,7 +7,6 @@ import numpy as np
 
 
 # In[2]:
-
 
 routeid_list = ["CAB285000006",
                 "CAB285000007",
@@ -55,19 +52,16 @@ for r_id in routeid_list:
 
 # In[3]:
 
-
 total_averages = pd.DataFrame(columns=["CAB285000006","CAB285000007","CAB285000008","CAB285000009","CAB285000010","CAB285000011","CAB285000012","CAB285000013","CAB285000024","CAB285000025","CAB285000293","CAB285000294"],index=["Stage1","Stage2","Stage3","Stage4"])
 
 
 # In[4]:
-
 
 path =  "../mine"
 file_list = os.listdir(path)
 
 
 # In[5]:
-
 
 for i in range(0,len(file_list)):
     temp = pd.read_csv("../mine/"+file_list[i])
@@ -80,4 +74,3 @@ for i in range(0,len(file_list)):
 
 total_averages["total_average"] = total_averages.mean(axis=1)
 total_averages.to_csv("../csv/data_table.csv", index=False, mode='w', encoding='utf-8-sig')
-
