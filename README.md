@@ -10,8 +10,12 @@
 
 ## Stage_1
 Time: 07:00 ~ 09:00
+## Stage_1_1
+Time: 09:30 ~ 11:30
 ## Stage_2
 Time: 12:00 ~ 14:00
+## Stage_2_1
+Time: 14:30 ~ 16:30
 ## Stage_3
 Time: 17:00 ~ 19:00
 ## Stage_4
